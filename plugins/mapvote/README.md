@@ -94,6 +94,7 @@ mapvote(
   squadLayerFilter, 
   {
     alwaysOn: true, // map vote will start without admin interaction if true
+    autoDelay: 0, // delay in seconds upon new round to start automatic voting (alwaysOn:true)
     minPlayerCount: null, // this number of players must be online before they can vote. null is off
     minVoteCount: null, // this number of votes must be counted before a layer is selected. null is off
   }

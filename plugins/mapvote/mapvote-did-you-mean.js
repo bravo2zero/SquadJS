@@ -7,6 +7,7 @@ import MapVote from './mapvote.js';
 export default function(server, squadLayerFilter, options = {}) {
   options = {
     alwaysOn: true,
+    autoDelay: 0,
     minPlayerCount: null,
     minVoteCount: null,
     ...options
@@ -38,7 +39,9 @@ export default function(server, squadLayerFilter, options = {}) {
 
   server.on(LOG_PARSER_NEW_GAME, () => {
     if (options.alwaysOn) {
-      newMapvote(false);
+      setTimeout(()=>{
+        newMapvote(false);
+      }, options.autoDelay * 1000);      
     } else {
       mapvote = null;
     }
