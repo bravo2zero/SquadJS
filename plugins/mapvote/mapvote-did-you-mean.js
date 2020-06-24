@@ -48,10 +48,23 @@ export default function(server, squadLayerFilter, options = {}) {
   });
 
   server.on(RCON_CHAT_MESSAGE, async info => {
-    const match = info.message.match(/^!mapvote ?(.*)/);
-    if (!match) return;
+    const voteMatch = info.message.match(/^([0-9])/);
+    if (voteMatch) {
+      if (!mapvote) return;
+      try {
+        const layerName = await mapvote.makeVoteByNumber(info.steamID, parseInt(voteMatch[1]));
+        await server.rcon.warn(info.steamID, `You voted for ${layerName}.`);
+      } catch (err) {
+        await server.rcon.warn(info.steamID, err.message);
+      }
+      await server.rcon.warn(info.steamID, `Powered by: ${COPYRIGHT_MESSAGE}`);
+      return;
+    }
 
-    if (match[1] === 'help') {
+    const commandMatch = info.message.match(/^!mapvote ?(.*)/);
+    if (!commandMatch) return;
+
+    if (commandMatch[1] === 'help') {
       await server.rcon.warn(info.steamID, 'You may use any of the following commands in chat:');
       await server.rcon.warn(info.steamID, '!mapvote results - View the current vote counts.');
       await server.rcon.warn(info.steamID, '!mapvote <layer name> - Vote for the specified layer.');
@@ -69,7 +82,7 @@ export default function(server, squadLayerFilter, options = {}) {
       return;
     }
 
-    if (match[1] === 'start') {
+    if (commandMatch[1] === 'start') {
       if (info.chat !== 'ChatAdmin') return;
 
       if (mapvote) {
@@ -85,13 +98,13 @@ export default function(server, squadLayerFilter, options = {}) {
       return;
     }
 
-    if (match[1] === 'restart') {
+    if (commandMatch[1] === 'restart') {
       if (info.chat !== 'ChatAdmin') return;
       await newMapvote();
       return;
     }
 
-    if (match[1] === 'end') {
+    if (commandMatch[1] === 'end') {
       if (info.chat !== 'ChatAdmin') return;
 
       const results = mapvote.getResults(true);
@@ -103,13 +116,13 @@ export default function(server, squadLayerFilter, options = {}) {
       return;
     }
 
-    if (match[1] === 'destroy') {
+    if (commandMatch[1] === 'destroy') {
       if (info.chat !== 'ChatAdmin') return;
       mapvote = null;
       return;
     }
 
-    if (match[1] === 'results') {
+    if (commandMatch[1] === 'results') {
       const results = mapvote.getResults();
 
       if (results.length === 0) {
@@ -132,7 +145,7 @@ export default function(server, squadLayerFilter, options = {}) {
     }
 
     try {
-      const layerName = await mapvote.makeVoteByDidYouMean(info.steamID, match[1]);
+      const layerName = await mapvote.makeVoteByDidYouMean(info.steamID, commandMatch[1]);
       await server.rcon.warn(info.steamID, `You voted for ${layerName}.`);
     } catch (err) {
       await server.rcon.warn(info.steamID, err.message);
